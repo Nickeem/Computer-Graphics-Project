@@ -1,2 +1,2 @@
-# COMP3420
-Computer Graphics utilizing PNG Writer and OpenGL
+# Computer Graphics
+Computer Graphics utilizing OpenGL
