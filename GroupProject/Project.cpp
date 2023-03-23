@@ -72,6 +72,7 @@ int main(int argc, char* argv[])
 {
     init_Resources();
     //Compile shaders 
+    //Shader objshader("vertex.glsl","fragment.glsl");
 
     //load the obj file 
     Model moon((GLchar *)"luna_-_moon.obj")
@@ -84,6 +85,9 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         
+
+        //display shader 
+       // moon.Draw(objshader); 
 
         glfwSwapBuffers(window);
         glfwPollEvents();
