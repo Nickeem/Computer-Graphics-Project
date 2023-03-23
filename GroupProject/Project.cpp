@@ -28,6 +28,7 @@ using namespace std;
 
 //ANY INCLUDES GO HERE 
 #include "model.h";
+#include "shader.h";
 
 
 GLFWwindow* window;
@@ -70,6 +71,10 @@ void init_Resources()
 int main(int argc, char* argv[])
 {
     init_Resources();
+    //Compile shaders 
+
+    //load the obj file 
+    Model moon((GLchar *)"luna_-_moon.obj")
 
 
 
