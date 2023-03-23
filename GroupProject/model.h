@@ -1,5 +1,5 @@
 #pragma once
-// Std. Includes
+// Basic Includes
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -8,8 +8,8 @@
 #include <vector>
 using namespace std;
 
-// GL Includes
-#include <GL/glew.h>                // Contains all the necessery OpenGL includes
+//Includes
+#include <GL/glew.h>      
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
