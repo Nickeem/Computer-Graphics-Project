@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     //Shader objshader("vertex.glsl","fragment.glsl");
 
     //load the obj file 
-    Model moon((GLchar *)"luna_-_moon.obj")
+    Model skull((GLchar *)"skull.obj")
 
 
 
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
         
 
         //display shader 
-       // moon.Draw(objshader); 
+       // skull.Draw(objshader); 
 
         glfwSwapBuffers(window);
         glfwPollEvents();
