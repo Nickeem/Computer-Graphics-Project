@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
         
 
         //display shader
-        objshader.use();
+        objshader.Use();
 
         //render the model 
         skull.Draw(objshader); 
