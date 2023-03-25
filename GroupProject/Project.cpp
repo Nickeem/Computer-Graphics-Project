@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     Shader objshader("modelverte.glsl","modelfrag.glsl");
 
     //load the obj file 
-    Model skull((GLchar *)"skull.obj")
+    Model skull((GLchar *)"skull.obj");
 
 
 
