@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 {
     init_Resources();
     //Compile shaders 
-    //Shader objshader("vertex.glsl","fragment.glsl");
+    Shader objshader("modelverte.glsl","modelfrag.glsl");
 
     //load the obj file 
     Model skull((GLchar *)"skull.obj")
@@ -86,8 +86,11 @@ int main(int argc, char* argv[])
 
         
 
-        //display shader 
-       // skull.Draw(objshader); 
+        //display shader
+        objshader.use();
+
+        //render the model 
+        skull.Draw(objshader); 
 
         glfwSwapBuffers(window);
         glfwPollEvents();
