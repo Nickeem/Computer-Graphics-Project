@@ -20,6 +20,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="modelfrag.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="modelverte.glsl">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
