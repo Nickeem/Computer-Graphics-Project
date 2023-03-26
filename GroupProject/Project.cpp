@@ -1,7 +1,7 @@
 /* 2023 Computer Graphics Project
 * Contributors:
 FAITH BROWNE
-NICKEEM-DEACON PAYNE
+NICKEEM PAYNE-DEACON
 CRYSTAL CHOW 
 ROMAINE CARTER
 TYRESE MAYNARD 
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     //Shader objshader("vertex.glsl","fragment.glsl");
 
     //load the obj file 
-    Model skull((GLchar *)"skull.obj")
+    Model skull((GLchar*)"skull.obj");
 
 
 
