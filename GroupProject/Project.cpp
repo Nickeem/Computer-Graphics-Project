@@ -38,7 +38,7 @@ GLFWwindow* window;
 
 // properties
 GLuint screenWidth = 800, screenHeight = 800;
-GLfloat scale_size = 100.f;
+GLfloat scale_size = 1.f;
 
 void init_Resources()
 {
@@ -82,7 +82,6 @@ void init_Resources()
     // Setup OpenGL options
     glEnable(GL_DEPTH_TEST);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);//background colour set to black 
 }
 //end of initresources 
 
@@ -133,7 +132,7 @@ int main()
         // =======================================================================
         View = glm::lookAt
         (
-            glm::vec3(500, 500, 500), // Camera position in World Space
+            glm::vec3(500, 500, 1300), // Camera position in World Space
             glm::vec3(0, 0, 0),  // and looking at the origin
             glm::vec3(0, 1, 0)   // Head is up (set to 0,-1,0 to look upside-down)
         );
