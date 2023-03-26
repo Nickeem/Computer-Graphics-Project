@@ -58,7 +58,7 @@ void init_Resources()
 
 
     //Create the window 
-    window = glfwCreateWindow(800, 800, "COMP3420 Project- GROUP 5", 0, 0);
+    window = glfwCreateWindow(screenWidth, screenHeight, "COMP3420 Project- GROUP 5", 0, 0);
 
     //If window fails creation, then shut down the display window 
     if (!window)
