@@ -27,6 +27,9 @@ Install-Package Assimp -version 3.0.0
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+/* REFERENCES GO HERE:
+1. The skull obj- https://www.turbosquid.com/3d-models/free-skull-3d-model/474120#
+*/
 
 //ANY INCLUDES GO HERE 
 #include "shader.h";
