@@ -19,6 +19,15 @@ Install-Package Soil
 Install-Package Assimp -version 3.0.0
 */
 
+/*
+Instructions:
+Move camera with arrow keys
+Mouse can be used to change what you are looking at
+Pressing H returns the camera to the initial position
+Press ESC to close program
+
+*/
+
 #include <GL/glew.h>  //include glew
 #include <GLFW/glfw3.h> //include glfw 
 
@@ -58,9 +67,12 @@ float lastFrame = 0.0f;
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes);
 //void mouseClickedCallback(GLFWwindow* window, int button, int  action, int mode);
-//void moveMouseCallback(GLFWwindow* window, double xpos, double ypos);
+void moveMouseCallback(GLFWwindow* window, double xpos, double ypos);
 void clickDragCallback(GLFWwindow* window, int button, int  action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+// misc functions
+unsigned int loadCubemap(vector<std::string>);
 
 
 void init_Resources()
@@ -112,11 +124,15 @@ void init_Resources()
         //----------------------------------------------------
     // glfwSetMouseButtonCallback(window, mouseClickedCallback);
     glfwSetMouseButtonCallback(window, clickDragCallback);
-    //glfwSetCursorPosCallback(window, moveMouseCallback);
+    glfwSetCursorPosCallback(window, moveMouseCallback);
     glfwSetScrollCallback(window, scroll_callback);
+
+    // Options - Hide the mouse pointer
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Setup OpenGL options
     glEnable(GL_DEPTH_TEST);
+
 
 }
 //end of initresources 
@@ -133,12 +149,143 @@ int main()
 
     //Compile shaders 
     Shader objshader("modelverte.glsl","modelfrag.glsl");
+    // Shaders for skybox
+    Shader shader("cubemaps.vs", "cubemaps.frag");
+    Shader skyboxShader("skybox.vs", "skybox.frag");
+
 
     //load the obj file 
     Model skull((GLchar*)"skull.obj");
 
     GLuint viewID = glGetUniformLocation(objshader.Program, "view");
 
+
+    // vertex data for cubemap
+    float cubeVertices[] = {
+        // positions          // texture Coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
+    //vertex data for skybox
+    float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+
+    // cube Vertex Array Object
+    unsigned int cubeVAO, cubeVBO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    // skybox Vertex Array Object
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    // skbox faces  using images
+    vector<std::string> faces
+    {
+        "assets/right.jpg",
+        "assets/left.jpg",
+        "assets/top.jpg",
+        "assets/bottom.jpg",
+        "assets/front.jpg",
+        "assets/back.jpg"
+    };
+    unsigned int cubemapTexture = loadCubemap(faces);
+
+    skyboxShader.Use();
+    skyboxShader.setInt("skybox", 0);
     
 
     
@@ -168,8 +315,7 @@ int main()
         );
 
         objshader.Use();
-        glUniformMatrix4fv(glGetUniformLocation(objshader.Program, "projection"),
-            1, GL_FALSE, glm::value_ptr(projection));
+        objshader.setMat4("projection", projection);
 
         // =======================================================================
         // Step 4. create the View matrix
@@ -189,20 +335,37 @@ int main()
 
         //Modify the model matrix with scaling, translation, rotation, etc
         Model = glm::scale(Model, glm::vec3(scale_size));
-        Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, 0.0f));
+        // translate skull further away from camera
+        Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, -1500.5f));
 
         
         Model = glm::rotate(Model, skullAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-
-
-
         // =======================================================================
-        // Step 6. Pass the Model matrix, "planetModel", to the shader as "model"
+        // Step 6. Pass the Model matrix,  to the skull shader as "model"
         // =======================================================================
-        glUniformMatrix4fv(glGetUniformLocation(objshader.Program, "model"), 1,
-            GL_FALSE, glm::value_ptr(Model));
+        objshader.setMat4("model", Model);
+
+
+        // draw skybox as last
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        skyboxShader.Use();
+        View = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        skyboxShader.setMat4("view", View);
+        skyboxShader.setMat4("projection", projection);
+        // skybox cube
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
+
+
+        objshader.Use();
+        glUniformMatrix4fv(viewID, 1,
+            GL_FALSE, glm::value_ptr(View));
+
 
         //render the model 
         skull.Draw(objshader); 
@@ -229,9 +392,10 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
         return;
     }
 
-
+    if ((key == GLFW_KEY_HOME || key == GLFW_KEY_H) && action == GLFW_PRESS)
+        camera = glm::vec3(0.0f, 0.0f, 1500.0f);
+    
     // move camera
-    const float cameraSpeed = 100.f; // adjust accordingly
     if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
         camera.ProcessKeyboard(FORWARD, deltaTime);
     }
@@ -244,7 +408,7 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         camera.ProcessKeyboard(RIGHT, deltaTime);
     }
-
+    
 }
 
 
@@ -260,20 +424,10 @@ void clickDragCallback(GLFWwindow* window, int button, int  action, int mode)
 {
     static double startX = 0, startY = 0, endX = 0, endY = 0;
 
-    while (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         // Make sure that the button is held down
         glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GL_TRUE);
-
-
-        // ------Do things here -------
-        //e.g. Catch starting XY location of the mouse pointer
-        glfwGetCursorPos(window, &startX, &startY);
-
-        cout << "\n\nBegin Dragging Mouse... ";
-        if (action != GLFW_RELEASE) {
-            break;
-        }
 
     }
 
@@ -281,14 +435,62 @@ void clickDragCallback(GLFWwindow* window, int button, int  action, int mode)
     {
         cout << "\nEnd Draging Mouse...\n";
 
-        // ------Do other things here -------
-        //e.g. Catch ending XY location of the mouse pointer
-        glfwGetCursorPos(window, &endX, &endY);
-        GLfloat xoffset = startX - lastX;
-        GLfloat yoffset = lastY - startY;
-        camera.ProcessMouseMovement(xoffset, yoffset);
-
         cout << "\nMouse has moved from X : " << startX << " to " << endX;
         cout << "\nMouse has moved from Y : " << startY << " to " << endY;
     }
+}
+
+void moveMouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    //if (mouseHold) {
+
+        if (mouseMoved)
+        {
+
+            lastX = xpos;
+            lastY = ypos;
+            mouseMoved = false;
+        }
+
+        GLfloat xoffset = xpos - lastX;
+        GLfloat yoffset = lastY - ypos;
+
+        lastX = xpos;
+        lastY = ypos;
+
+        camera.ProcessMouseMovement(xoffset, yoffset);
+    //}
+    
+}
+
+
+// misc
+unsigned int loadCubemap(vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = SOIL_load_image(faces[i].c_str(), &width, &height, 0, SOIL_LOAD_RGB);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+        }
+        else
+        {
+            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
 }
