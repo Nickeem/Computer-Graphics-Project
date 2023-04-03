@@ -37,10 +37,11 @@ class Model
                 this->meshes[i].Draw(shader);
         }
         vector<Texture> textures_loaded;	// Stores textures loaded (loaded only once)
+        vector<Mesh> meshes;
 
     private:
         // model data
-        vector<Mesh> meshes;
+        
         string directory;
 
         void loadModel(string path);

@@ -50,7 +50,7 @@ Press ESC to close program
 GLFWwindow* window;
 
 // properties
-GLuint screenWidth = 1000, screenHeight = 800;
+GLuint screenWidth = 1500, screenHeight = 900;
 GLfloat scale_size = 1.f;
 
 //Initial location of camera
@@ -65,6 +65,18 @@ bool mouseMoved = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+// skull position
+GLfloat skullPositionZ = 0.1f;
+GLfloat skullPositionX = 0.0f;
+
+// properties of rain
+const GLfloat RAIN_HEIGHT = 1000.0f;
+const GLfloat RAIN_SURFACE = -800.f;
+const int MAX_RAIN_WIDTH = 10000;
+const int MAX_RAIN_SPEED = 10000;
+
+
+
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes);
 //void mouseClickedCallback(GLFWwindow* window, int button, int  action, int mode);
 void moveMouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -78,11 +90,11 @@ unsigned int loadCubemap(vector<std::string>);
 void init_Resources()
 {
     // Initialize the resources - set window, etc.
-    /*if (!glfwInit())
+    if (!glfwInit())
     {
         cout << "\nFailed to Initialize GLFW...";
         exit(EXIT_FAILURE);
-    } */
+    } 
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -141,23 +153,52 @@ void init_Resources()
 //Main Function 
 int main()
 {
+    srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
     init_Resources();
 
-    GLfloat skullAngle = 0;
+    GLfloat skullAngle = -0.9f;
 
     glm::mat4 View;
 
-    //Compile shaders 
+    //Compile object shaders 
     Shader objshader("modelverte.glsl","modelfrag.glsl");
+    Shader rainShader("shaders/rain.vs", "shaders/rain.frag");
+
     // Shaders for skybox
     Shader shader("cubemaps.vs", "cubemaps.frag");
     Shader skyboxShader("skybox.vs", "skybox.frag");
 
-
-    //load the obj file 
-    Model skull((GLchar*)"skull.obj");
-
     GLuint viewID = glGetUniformLocation(objshader.Program, "view");
+    GLuint viewID_rain = glGetUniformLocation(rainShader.Program, "view");
+
+
+    //load the obj files
+    Model skull((GLchar*)"skull.obj"); // skull model
+    Model Rain((GLchar*)"assets/rain.obj"); // rain model
+
+    const unsigned int rainDrops = 100;
+    glm::mat4* rainModelMatrices;
+    rainModelMatrices = new glm::mat4[rainDrops];
+    GLfloat rainPositions[rainDrops][2]; // two dimentional array that stores x,y coordinates of rain drops
+    GLfloat rainSpeeds[rainDrops]; // array to store speed of each rain drop
+
+
+
+    for (unsigned int i = 0; i < rainDrops; i++) {
+        GLfloat x = (float)(rand() % MAX_RAIN_WIDTH) / 10.00;
+        GLfloat speed = (float)(rand() % MAX_RAIN_SPEED) / 10000;
+        if (rand() % 2 == 0)
+            x *= -1; // 50% chance of making number negative
+        cout << "x: " << x << endl; // check range of x values
+        rainPositions[i][0] = x; // assign random x value of rain drop
+        rainPositions[i][1] = RAIN_HEIGHT; // assign y position of raindrop 
+        rainSpeeds[i] = speed; // randomly assign speed of rain to rainDrop at position i
+    }
+
+
+    
+
+    
 
 
     // vertex data for cubemap
@@ -306,8 +347,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // =======================================================================
-    //  Set the projection matrix
-    // =======================================================================
+        //  Set the projection matrix
+        // =======================================================================
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), // Field of Vision
             (GLfloat)screenWidth / (GLfloat)screenHeight, // Aspect Ratio
             1.0f,
@@ -317,18 +358,29 @@ int main()
         objshader.Use();
         objshader.setMat4("projection", projection);
 
+        rainShader.Use();
+        rainShader.setMat4("projection", projection);
+
         // =======================================================================
         // Step 4. create the View matrix
         // =======================================================================
         View = camera.GetViewMatrix();
 
         objshader.Use();
-        glUniformMatrix4fv(viewID, 1,
-            GL_FALSE, glm::value_ptr(View));
+        objshader.setMat4("view", View);
+       // glUniformMatrix4fv(glGetUniformLocation(objshader.Program, "view"), 1,
+         //   GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+
+        rainShader.Use();
+        rainShader.setMat4("view", View);
+        //glUniformMatrix4fv(glGetUniformLocation(rainShader.Program, "view"), 1,
+          //  GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+        
 
         // =======================================================================
-        // Create the model matrix 
+        // Create the model matrix  for skull
         // =======================================================================
+        
         //display shader
         objshader.Use();
         glm::mat4 Model = glm::mat4(1);
@@ -336,15 +388,131 @@ int main()
         //Modify the model matrix with scaling, translation, rotation, etc
         Model = glm::scale(Model, glm::vec3(scale_size));
         // translate skull further away from camera
-        Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, -1500.5f));
-
-        
+        Model = glm::translate(Model, glm::vec3(skullPositionX, 0.0f, skullPositionZ));
+        skullAngle += 0.0002;
         Model = glm::rotate(Model, skullAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
         // =======================================================================
-        // Step 6. Pass the Model matrix,  to the skull shader as "model"
+        // Pass the Model matrix,  to the skull shader as "model"
         // =======================================================================
         objshader.setMat4("model", Model);
+        skull.Draw(objshader);
+
+
+
+
+
+
+
+
+
+
+
+        // =======================================================================
+        // Create the model matrix  for rain including physics
+        // =======================================================================
+
+        rainShader.Use();
+        for (unsigned int i = 0; i < rainDrops; i++) {
+            glm::mat4 model = glm::mat4(1.0f);
+
+            rainPositions[i][1] -= rainSpeeds[i]; // make rain fall to surface
+            if (rainPositions[i][1] < RAIN_SURFACE)
+                rainPositions[i][1] = RAIN_HEIGHT;
+
+            model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], skullPositionZ));
+            model = glm::scale(model, glm::vec3(100.f, 50.f, 100.f));
+            // add list of matrices
+            rainModelMatrices[i] = model;
+        }
+
+        // configure instanced array
+        // -------------------------
+        unsigned int buffer;
+        glGenBuffers(1, &buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, rainDrops * sizeof(glm::mat4), &rainModelMatrices[0], GL_STATIC_DRAW);
+
+        for (unsigned int i = 0; i < Rain.meshes.size(); i++)
+        {
+            unsigned int VAO = Rain.meshes[i].VAO;
+            glBindVertexArray(VAO);
+            // set attribute pointers for matrix (4 times vec4)
+            glEnableVertexAttribArray(3);
+            glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+            glEnableVertexAttribArray(4);
+            glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+            glEnableVertexAttribArray(5);
+            glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+            glEnableVertexAttribArray(6);
+            glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+            glVertexAttribDivisor(3, 1);
+            glVertexAttribDivisor(4, 1);
+            glVertexAttribDivisor(5, 1);
+            glVertexAttribDivisor(6, 1);
+
+            glBindVertexArray(0);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /*glm::mat4 rainModel = glm::mat4(1);
+        rainModel = glm::scale(rainModel, glm::vec3(100.f));
+        rainHeight -= rainSpeed;
+        if (rainHeight < -1.0f)
+            rainHeight = RAINHeight;
+        rainModel = glm::translate(rainModel, glm::vec3(0.0f, rainHeight, rainPositionZ));
+        rainShader.setMat4("model", rainModel);
+        Rain.Draw(rainShader);*/
+        for (unsigned int i = 0; i < Rain.meshes.size(); i++)
+        {
+            glBindVertexArray(Rain.meshes[i].VAO);
+            glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(Rain.meshes[i].indices.size()), GL_UNSIGNED_INT, 0, rainDrops);
+            glBindVertexArray(0);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         // draw skybox as last
@@ -361,14 +529,7 @@ int main()
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
 
-
-        objshader.Use();
-        glUniformMatrix4fv(viewID, 1,
-            GL_FALSE, glm::value_ptr(View));
-
-
-        //render the model 
-        skull.Draw(objshader); 
+       
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -408,7 +569,8 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         camera.ProcessKeyboard(RIGHT, deltaTime);
     }
-    
+
+
 }
 
 

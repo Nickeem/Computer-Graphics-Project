@@ -138,6 +138,8 @@
     <None Include="modelfrag.glsl" />
     <None Include="modelverte.glsl" />
     <None Include="packages.config" />
+    <None Include="shaders\rain.frag" />
+    <None Include="shaders\rain.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />

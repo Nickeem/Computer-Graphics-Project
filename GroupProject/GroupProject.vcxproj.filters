@@ -27,6 +27,12 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="shaders\rain.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\rain.vs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mesh.h">
