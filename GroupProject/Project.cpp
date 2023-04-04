@@ -72,8 +72,9 @@ GLfloat skullPositionX = 0.0f;
 // properties of rain
 const GLfloat RAIN_HEIGHT = 1000.0f;
 const GLfloat RAIN_SURFACE = -800.f;
-const int MAX_RAIN_WIDTH = 10000;
+const int MAX_RAIN_WIDTH = 4000;
 const int MAX_RAIN_SPEED = 10000;
+const unsigned int RAIN_DROPS = 500;
 
 
 
@@ -176,16 +177,16 @@ int main()
     Model skull((GLchar*)"skull.obj"); // skull model
     Model Rain((GLchar*)"assets/rain.obj"); // rain model
 
-    const unsigned int rainDrops = 100;
+    
     glm::mat4* rainModelMatrices;
-    rainModelMatrices = new glm::mat4[rainDrops];
-    GLfloat rainPositions[rainDrops][2]; // two dimentional array that stores x,y coordinates of rain drops
-    GLfloat rainSpeeds[rainDrops]; // array to store speed of each rain drop
+    rainModelMatrices = new glm::mat4[RAIN_DROPS];
+    GLfloat rainPositions[RAIN_DROPS][2]; // two dimentional array that stores x,y coordinates of rain drops
+    GLfloat rainSpeeds[RAIN_DROPS]; // array to store speed of each rain drop
 
 
 
-    for (unsigned int i = 0; i < rainDrops; i++) {
-        GLfloat x = (float)(rand() % MAX_RAIN_WIDTH) / 10.00;
+    for (unsigned int i = 0; i < RAIN_DROPS; i++) {
+        GLfloat x = (float)(rand() % MAX_RAIN_WIDTH);
         GLfloat speed = (float)(rand() % MAX_RAIN_SPEED) / 10000;
         if (rand() % 2 == 0)
             x *= -1; // 50% chance of making number negative
@@ -413,7 +414,7 @@ int main()
         // =======================================================================
 
         rainShader.Use();
-        for (unsigned int i = 0; i < rainDrops; i++) {
+        for (unsigned int i = 0; i < RAIN_DROPS; i++) {
             glm::mat4 model = glm::mat4(1.0f);
 
             rainPositions[i][1] -= rainSpeeds[i]; // make rain fall to surface
@@ -421,7 +422,7 @@ int main()
                 rainPositions[i][1] = RAIN_HEIGHT;
 
             model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], skullPositionZ));
-            model = glm::scale(model, glm::vec3(100.f, 50.f, 100.f));
+            model = glm::scale(model, glm::vec3(100.f, 10.f, 100.f));
             // add list of matrices
             rainModelMatrices[i] = model;
         }
@@ -431,7 +432,7 @@ int main()
         unsigned int buffer;
         glGenBuffers(1, &buffer);
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glBufferData(GL_ARRAY_BUFFER, rainDrops * sizeof(glm::mat4), &rainModelMatrices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, RAIN_DROPS * sizeof(glm::mat4), &rainModelMatrices[0], GL_STATIC_DRAW);
 
         for (unsigned int i = 0; i < Rain.meshes.size(); i++)
         {
@@ -498,7 +499,7 @@ int main()
         for (unsigned int i = 0; i < Rain.meshes.size(); i++)
         {
             glBindVertexArray(Rain.meshes[i].VAO);
-            glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(Rain.meshes[i].indices.size()), GL_UNSIGNED_INT, 0, rainDrops);
+            glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(Rain.meshes[i].indices.size()), GL_UNSIGNED_INT, 0, RAIN_DROPS);
             glBindVertexArray(0);
         }
 
