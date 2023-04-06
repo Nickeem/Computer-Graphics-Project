@@ -317,12 +317,12 @@ int main()
     // skbox faces  using images
     vector<std::string> faces
     {
-        "assets/right.png",
-        "assets/left.png",
-        "assets/top.png",
-        "assets/bottom.png",
-        "assets/front.png",
-        "assets/back.png"
+        "assets/matrix.jpg",
+        "assets/matrix.jpg",
+        "assets/matrix.jpg",
+        "assets/matrix.jpg",
+        "assets/matrix.jpg",
+        "assets/matrix.jpg"
     };
     unsigned int cubemapTexture = loadCubemap(faces);
 
