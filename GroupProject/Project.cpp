@@ -51,7 +51,7 @@ GLFWwindow* window;
 
 // properties
 GLuint screenWidth = 1500, screenHeight = 900;
-GLfloat scale_size = 1.f;
+GLfloat scale_size = 60.0f;
 
 //Initial location of camera
 glm::vec3 camLocation(0.0f, 0.0f, 1500.0f);
@@ -174,7 +174,7 @@ int main()
 
 
     //load the obj files
-    Model skull((GLchar*)"skull.obj"); // skull model
+    Model skull((GLchar*)"assets/fi-ex.obj"); // skull model
     Model Rain((GLchar*)"assets/rain.obj"); // rain model
 
     
