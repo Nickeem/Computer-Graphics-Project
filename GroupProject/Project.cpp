@@ -174,7 +174,7 @@ int main()
 
 
     //load the obj files
-    Model skull((GLchar*)"skull.obj"); // skull model
+    Model skull((GLchar*)"skullzzz.obj"); // skull model
     Model Rain((GLchar*)"assets/rain.obj"); // rain model
 
     
