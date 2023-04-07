@@ -37,7 +37,7 @@ Press ESC to close program
 #include <glm/gtc/type_ptr.hpp>
 
 /* REFERENCES GO HERE:
-1. The skull obj- https://www.turbosquid.com/3d-models/free-skull-3d-model/474120#
+1. The gun obj- https://www.turbosquid.com/Search/Index.cfm?keyword=gun+free&max_price=0&media_typeid=3&min_price=0#
 */
 
 //ANY INCLUDES GO HERE 
@@ -65,7 +65,7 @@ bool mouseMoved = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-// skull position
+// skull position or gun position...change variables
 GLfloat skullPositionZ = 0.1f;
 GLfloat skullPositionX = 0.0f;
 
