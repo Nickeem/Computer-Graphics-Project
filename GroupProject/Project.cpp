@@ -416,11 +416,24 @@ int main()
     skullPositionX*= -1; 
 
     //test for if rain touches skull 
+//for loop for rain drops 
+for (unsigned int i=0; i <RAIN_DROPS;i++)
+{
+    xdif = skullPosittionZ - rainPositions[i];
+    ydif = skullPositionX - rainrainPositions[i];
+        if ( sqrt((xdif*xdif) + (ydif*ydif)) < 750)    //if rain and skull touch then
+            {
+               ??
+            }
+}
+
 
 
     //increment location of skull 
     lastX += skullPositionX; 
     lastY += skullPositionZ; 
+    
+    
        
 */
 
