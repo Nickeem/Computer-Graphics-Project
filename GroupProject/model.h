@@ -54,15 +54,13 @@ class Model
 };
 
 
-
-// Loads model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 void Model::loadModel(string path)
     {
         // Read file via ASSIMP
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-        // Check for errors
-        if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+        // Check for errors if not 0
+        if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
             {
                 cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
                 return;
@@ -77,17 +75,11 @@ void Model::loadModel(string path)
 
 
 
-
-// Processes a node in a recursive fashion. Processes each individual mesh located at the
-// node and repeats this process on its children nodes (if any).
 void Model::processNode(aiNode* node, const aiScene* scene)
     {
         // Process each mesh located at the current node
         for(GLuint i = 0; i < node->mNumMeshes; i++)
             {
-                // The node object only contains indices to index the actual objects in the
-                // scene. The scene contains all the data, node is just to keep stuff organized
-                // (like relations between nodes).
                 aiMesh* mesh = scene->mMeshes[node->mMeshes[i]]; 
                 this->meshes.push_back(this->processMesh(mesh, scene));			
             }
@@ -103,7 +95,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     {
-        // Data to fill
+        
         vector<Vertex> vertices;
         vector<GLuint> indices;
         vector<Texture> textures;
@@ -180,8 +172,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
                         if(textures_loaded[j].path == str)
                             {
                                 textures.push_back(textures_loaded[j]);
-                                skip = true;    // A texture with the same filepath has already been
-                                                // loaded, continue to next one. (optimization)
+                                skip = true;    // A texture with the same filepath has already been found.
                                 break;
                             }
                     }
