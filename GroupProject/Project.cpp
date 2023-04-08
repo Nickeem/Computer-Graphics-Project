@@ -79,8 +79,7 @@ const int MAX_RAIN_Z = 4000;
 const int MAX_RAIN_SPEED = 10000;
 const unsigned int RAIN_DROPS = 1000;
 
-
-
+// Callback functions
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes);
 //void mouseClickedCallback(GLFWwindow* window, int button, int  action, int mode);
 void moveMouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -136,8 +135,8 @@ void init_Resources()
     glfwSetKeyCallback(window, keyboardCallback);
 
     //----------------------------------------------------
-        // Registering the call-back functions for the mouse
-        //----------------------------------------------------
+    // Registering the call-back functions for the mouse
+    //----------------------------------------------------
     // glfwSetMouseButtonCallback(window, mouseClickedCallback);
     glfwSetMouseButtonCallback(window, clickDragCallback);
     glfwSetCursorPosCallback(window, moveMouseCallback);
@@ -177,15 +176,14 @@ int main()
 
 
     //load the obj files
-    Model skull((GLchar*)"assets/fi-ex.obj"); // skull model
+    Model skull((GLchar*)"assets/fi-ex.obj"); // gun model
     Model Rain((GLchar*)"assets/rain.obj"); // rain model
 
-    
+    //rain model
     glm::mat4* rainModelMatrices;
     rainModelMatrices = new glm::mat4[RAIN_DROPS];
     GLfloat rainPositions[RAIN_DROPS][3]; // two dimentional array that stores x,y coordinates of rain drops
     GLfloat rainSpeeds[RAIN_DROPS]; // array to store speed of each rain drop
-
 
 
     for (unsigned int i = 0; i < RAIN_DROPS; i++) {
@@ -204,12 +202,9 @@ int main()
     }
 
 
-    
+   
 
-    
-
-
-    // vertex data for cubemap
+    // Vertex data for cubemap
     float cubeVertices[] = {
         // positions          // texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -386,7 +381,7 @@ int main()
         
 
         // =======================================================================
-        // Create the model matrix  for skull
+        // Create the model matrix  for skull/gun
         // =======================================================================
         
         //display shader
@@ -408,7 +403,7 @@ int main()
 
 
 
-
+       // TEST FOR EDGE DETECTION
 
 
 
