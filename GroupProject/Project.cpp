@@ -405,8 +405,24 @@ int main()
 
        // TEST FOR EDGE DETECTION
 
+       /*
+       //if skull touch the side 
+    lastX+=skullPositionX; 
+    if(lastX > 750 || lastX <-750) 
+    skullPositionX *= -1; 
+
+    lastY+=skullPoisitionZ; 
+    if(lastY >750 || last Y <-750)
+    skullPositionX*= -1; 
+
+    //test for if rain touches skull 
 
 
+    //increment location of skull 
+    lastX += skullPositionX; 
+    lastY += skullPositionZ; 
+       
+*/
 
 
 
