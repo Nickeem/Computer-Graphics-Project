@@ -1,5 +1,5 @@
 #pragma once
-// Std. Includes
+
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -71,10 +71,10 @@ class Mesh
 
                     number = ss.str();
 
-                    // Now set the sampler to the correct texture unit
+                    // Set the sampler to the correct texture unit
                     glUniform1f(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
 
-                    // And finally bind the texture
+                    // Bind the texture
                     glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
                 }
 
@@ -83,7 +83,7 @@ class Mesh
                 glDrawElements(GL_TRIANGLES, (GLsizei)this->indices.size(), GL_UNSIGNED_INT, 0);
                 glBindVertexArray(0);
 
-                // Set everything back to defaults once configured.
+                // Back to default
                 for (GLuint i = 0; i < this->textures.size(); i++)
                 {
                     glActiveTexture(GL_TEXTURE0 + i);
@@ -95,7 +95,7 @@ class Mesh
         GLuint VBO, EBO;        //  Render data
         void setupMesh()      // Initializes all the buffer objects/arrays
         {
-            // Create buffers/arrays
+            // Create buffers & arrays
             glGenVertexArrays(1, &this->VAO);
             glGenBuffers(1, &this->VBO);
             glGenBuffers(1, &this->EBO);
@@ -111,8 +111,6 @@ class Mesh
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint),
                 &this->indices[0], GL_STATIC_DRAW);
 
-
-            // Set the vertex attribute pointers
             // Vertex Positions
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
