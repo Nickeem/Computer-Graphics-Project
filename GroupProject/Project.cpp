@@ -38,6 +38,8 @@ Press ESC to close program
 
 /* REFERENCES GO HERE:
 1. The gun obj- https://www.turbosquid.com/Search/Index.cfm?keyword=gun+free&max_price=0&media_typeid=3&min_price=0#
+2. Binary image - http://www.freepik.com
+3. Sky image - https://www.cleanpng.com/png-skybox-texture-mapping-cube-mapping-desktop-wallpa-6020000/
 */
 
 //ANY INCLUDES GO HERE 
@@ -71,10 +73,11 @@ GLfloat skullPositionX = 0.0f;
 
 // properties of rain
 const GLfloat RAIN_HEIGHT = 1000.0f;
-const GLfloat RAIN_SURFACE = -800.f;
+const GLfloat RAIN_SURFACE = -1000.f;
 const int MAX_RAIN_WIDTH = 4000;
+const int MAX_RAIN_Z = 4000;
 const int MAX_RAIN_SPEED = 10000;
-const unsigned int RAIN_DROPS = 500;
+const unsigned int RAIN_DROPS = 1000;
 
 
 
@@ -180,19 +183,23 @@ int main()
     
     glm::mat4* rainModelMatrices;
     rainModelMatrices = new glm::mat4[RAIN_DROPS];
-    GLfloat rainPositions[RAIN_DROPS][2]; // two dimentional array that stores x,y coordinates of rain drops
+    GLfloat rainPositions[RAIN_DROPS][3]; // two dimentional array that stores x,y coordinates of rain drops
     GLfloat rainSpeeds[RAIN_DROPS]; // array to store speed of each rain drop
 
 
 
     for (unsigned int i = 0; i < RAIN_DROPS; i++) {
         GLfloat x = (float)(rand() % MAX_RAIN_WIDTH);
+        GLfloat z = (float)(rand() % MAX_RAIN_Z);
         GLfloat speed = (float)(rand() % MAX_RAIN_SPEED) / 10000;
         if (rand() % 2 == 0)
             x *= -1; // 50% chance of making number negative
+        if (rand() % 2 == 0)
+            z *= -1; // 50% chance of making number negative
         cout << "x: " << x << endl; // check range of x values
         rainPositions[i][0] = x; // assign random x value of rain drop
         rainPositions[i][1] = RAIN_HEIGHT; // assign y position of raindrop 
+        rainPositions[i][2] = z; // assign z position of raindrop 
         rainSpeeds[i] = speed; // randomly assign speed of rain to rainDrop at position i
     }
 
@@ -421,7 +428,7 @@ int main()
             if (rainPositions[i][1] < RAIN_SURFACE)
                 rainPositions[i][1] = RAIN_HEIGHT;
 
-            model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], skullPositionZ));
+            model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], rainPositions[i][2]));
             model = glm::scale(model, glm::vec3(100.f, 10.f, 100.f));
             // add list of matrices
             rainModelMatrices[i] = model;
