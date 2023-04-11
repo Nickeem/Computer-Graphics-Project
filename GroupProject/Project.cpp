@@ -67,9 +67,9 @@ bool mouseMoved = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-// skull position or gun position...change variables
-GLfloat skullPositionZ = 0.1f;
-GLfloat skullPositionX = 0.0f;
+//  gun position
+GLfloat gunPositionZ = 0.1f;
+GLfloat gunPositionX = 0.0f;
 
 // properties of rain
 const GLfloat RAIN_HEIGHT = 1000.0f;
@@ -159,7 +159,7 @@ int main()
     srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
     init_Resources();
 
-    GLfloat skullAngle = -0.9f;
+    GLfloat gunAngle = -0.9f;
 
     glm::mat4 View;
 
@@ -167,16 +167,16 @@ int main()
     Shader objshader("modelverte.glsl","modelfrag.glsl");
     Shader rainShader("shaders/rain.vs", "shaders/rain.frag");
 
-    // Shaders for skybox
+    // Shaders for Background
     Shader shader("cubemaps.vs", "cubemaps.frag");
-    Shader skyboxShader("skybox.vs", "skybox.frag");
+    Shader matrixbgShader("skybox.vs", "skybox.frag");
 
     GLuint viewID = glGetUniformLocation(objshader.Program, "view");
     GLuint viewID_rain = glGetUniformLocation(rainShader.Program, "view");
 
 
     //load the obj files
-    Model skull((GLchar*)"assets/fi-ex.obj"); // gun model
+    Model gun((GLchar*)"assets/fi-ex.obj"); // gun model
     Model Rain((GLchar*)"assets/rain.obj"); // rain model
 
     //rain model
@@ -249,7 +249,7 @@ int main()
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
-    //vertex data for skybox
+    //vertex data for Matrix Background
     float skyboxVertices[] = {
         // positions          
         -1.0f,  1.0f, -1.0f,
@@ -316,7 +316,7 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    // skbox faces  using images
+    // matrix background faces  using images
     vector<std::string> faces
     {
         "assets/matrix.jpg",
@@ -328,13 +328,9 @@ int main()
     };
     unsigned int cubemapTexture = loadCubemap(faces);
 
-    skyboxShader.Use();
-    skyboxShader.setInt("skybox", 0);
+    matrixbgShader.Use();
+    matrixbgShader.setInt("skybox", 0);
     
-
-    
-
-
 
     //Keep displaying the window until we have shut it down
     while (!glfwWindowShouldClose(window))
@@ -381,7 +377,7 @@ int main()
         
 
         // =======================================================================
-        // Create the model matrix  for skull/gun
+        // Create the model matrix  for gun
         // =======================================================================
         
         //display shader
@@ -390,38 +386,38 @@ int main()
 
         //Modify the model matrix with scaling, translation, rotation, etc
         Model = glm::scale(Model, glm::vec3(scale_size));
-        // translate skull further away from camera
-        Model = glm::translate(Model, glm::vec3(skullPositionX, 0.0f, skullPositionZ));
-        skullAngle += 0.0002;
-        Model = glm::rotate(Model, skullAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+        // translate gun further away from camera
+        Model = glm::translate(Model, glm::vec3(gunPositionX, 0.0f, gunPositionZ));
+        gunAngle += 0.0002;
+        Model = glm::rotate(Model, gunAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
         // =======================================================================
-        // Pass the Model matrix,  to the skull shader as "model"
+        // Pass the Model matrix,  to the gun shader as "model"
         // =======================================================================
         objshader.setMat4("model", Model);
-        skull.Draw(objshader);
+        gun.Draw(objshader);
 
 
 
        // TEST FOR EDGE DETECTION
 
        /*
-       //if skull touch the side 
-    lastX+=skullPositionX; 
+       //if gun touch the side 
+    lastX+=gunPositionX; 
     if(lastX > 750 || lastX <-750) 
-    skullPositionX *= -1; 
+    gunPositionX *= -1; 
 
-    lastY+=skullPoisitionZ; 
+    lastY+=gunPoisitionZ; 
     if(lastY >750 || last Y <-750)
-    skullPositionX*= -1; 
+    gunPositionX*= -1; 
 
-    //test for if rain touches skull 
+    //test for if rain touches gun
 //for loop for rain drops 
 for (unsigned int i=0; i <RAIN_DROPS;i++)
 {
-    xdif = skullPosittionZ - rainPositions[i];
-    ydif = skullPositionX - rainrainPositions[i];
-        if ( sqrt((xdif*xdif) + (ydif*ydif)) < 750)    //if rain and skull touch then
+    xdif = gunPosittionZ - rainPositions[i];
+    ydif = gunPositionX - rainrainPositions[i];
+        if ( sqrt((xdif*xdif) + (ydif*ydif)) < 750)    //if rain and gun touch then
             {
                ??
             }
@@ -429,15 +425,13 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
 
 
 
-    //increment location of skull 
-    lastX += skullPositionX; 
-    lastY += skullPositionZ; 
+    //increment location of gun 
+    lastX += gunPositionX; 
+    lastY += gunPositionZ; 
     
     
        
 */
-
-
 
 
         // =======================================================================
@@ -488,37 +482,6 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         /*glm::mat4 rainModel = glm::mat4(1);
         rainModel = glm::scale(rainModel, glm::vec3(100.f));
         rainHeight -= rainSpeed;
@@ -536,24 +499,13 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-        // draw skybox as last
+        // draw matrix background as last
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-        skyboxShader.Use();
+        matrixbgShader.Use();
         View = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
-        skyboxShader.setMat4("view", View);
-        skyboxShader.setMat4("projection", projection);
-        // skybox cube
+        matrixbgShader.setMat4("view", View);
+        matrixbgShader.setMat4("projection", projection);
+        // matrix bg cube
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
@@ -572,8 +524,6 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
-
-
 
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes)
@@ -604,7 +554,6 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 
 
 }
-
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
@@ -656,7 +605,6 @@ void moveMouseCallback(GLFWwindow* window, double xpos, double ypos)
     //}
     
 }
-
 
 // misc
 unsigned int loadCubemap(vector<std::string> faces)
