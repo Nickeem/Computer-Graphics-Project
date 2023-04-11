@@ -37,9 +37,7 @@ Press ESC to close program
 #include <glm/gtc/type_ptr.hpp>
 
 /* REFERENCES GO HERE:
-1. The gun obj- https://www.turbosquid.com/Search/Index.cfm?keyword=gun+free&max_price=0&media_typeid=3&min_price=0#
-2. Binary image - http://www.freepik.com
-3. Sky image - https://www.cleanpng.com/png-skybox-texture-mapping-cube-mapping-desktop-wallpa-6020000/
+1. The skull obj- https://www.turbosquid.com/3d-models/free-skull-3d-model/474120#
 */
 
 //ANY INCLUDES GO HERE 
@@ -73,18 +71,19 @@ GLfloat gunPositionX = 0.0f;
 
 // properties of rain
 const GLfloat RAIN_HEIGHT = 1000.0f;
-const GLfloat RAIN_SURFACE = -1000.f;
+const GLfloat RAIN_SURFACE = -800.f;
 const int MAX_RAIN_WIDTH = 4000;
-const int MAX_RAIN_Z = 4000;
 const int MAX_RAIN_SPEED = 10000;
-const unsigned int RAIN_DROPS = 1000;
+const unsigned int RAIN_DROPS = 500;
 
-// Callback functions
-void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes);
-//void mouseClickedCallback(GLFWwindow* window, int button, int  action, int mode);
+GLfloat skullAngle = -0.9f;
+
+void inputCallback(GLFWwindow* window);
+// void mouseClickedCallback(GLFWwindow* window, int button, int  action, int mode);
 void moveMouseCallback(GLFWwindow* window, double xpos, double ypos);
 void clickDragCallback(GLFWwindow* window, int button, int  action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void windowSize_callback(GLFWwindow* window, int width, int height);
 
 // misc functions
 unsigned int loadCubemap(vector<std::string>);
@@ -108,7 +107,7 @@ void init_Resources()
 
 
     //Create the window 
-    window = glfwCreateWindow(screenWidth, screenHeight, "COMP3420 Project- GROUP 5", 0, 0);
+    window = glfwCreateWindow(screenWidth, screenHeight, "COMP3420 Project - GROUP 5", 0, 0);
 
     //If window fails creation, then shut down the display window 
     if (!window)
@@ -132,11 +131,11 @@ void init_Resources()
     //----------------------------------------------------
     // Registering the call-back function for the keyboard
     //----------------------------------------------------
-    glfwSetKeyCallback(window, keyboardCallback);
+    //glfwSetKeyCallback(window, keyboardCallback);
 
     //----------------------------------------------------
-    // Registering the call-back functions for the mouse
-    //----------------------------------------------------
+        // Registering the call-back functions for the mouse
+        //----------------------------------------------------
     // glfwSetMouseButtonCallback(window, mouseClickedCallback);
     glfwSetMouseButtonCallback(window, clickDragCallback);
     glfwSetCursorPosCallback(window, moveMouseCallback);
@@ -144,6 +143,8 @@ void init_Resources()
 
     // Options - Hide the mouse pointer
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    glfwSetWindowSizeCallback(window, windowSize_callback);
 
     // Setup OpenGL options
     glEnable(GL_DEPTH_TEST);
@@ -179,32 +180,32 @@ int main()
     Model gun((GLchar*)"assets/fi-ex.obj"); // gun model
     Model Rain((GLchar*)"assets/rain.obj"); // rain model
 
-    //rain model
+    
     glm::mat4* rainModelMatrices;
     rainModelMatrices = new glm::mat4[RAIN_DROPS];
-    GLfloat rainPositions[RAIN_DROPS][3]; // two dimentional array that stores x,y coordinates of rain drops
+    GLfloat rainPositions[RAIN_DROPS][2]; // two dimentional array that stores x,y coordinates of rain drops
     GLfloat rainSpeeds[RAIN_DROPS]; // array to store speed of each rain drop
+
 
 
     for (unsigned int i = 0; i < RAIN_DROPS; i++) {
         GLfloat x = (float)(rand() % MAX_RAIN_WIDTH);
-        GLfloat z = (float)(rand() % MAX_RAIN_Z);
         GLfloat speed = (float)(rand() % MAX_RAIN_SPEED) / 10000;
         if (rand() % 2 == 0)
             x *= -1; // 50% chance of making number negative
-        if (rand() % 2 == 0)
-            z *= -1; // 50% chance of making number negative
-        cout << "x: " << x << endl; // check range of x values
+        // cout << "x: " << x << endl; // check range of x values
         rainPositions[i][0] = x; // assign random x value of rain drop
         rainPositions[i][1] = RAIN_HEIGHT; // assign y position of raindrop 
-        rainPositions[i][2] = z; // assign z position of raindrop 
         rainSpeeds[i] = speed; // randomly assign speed of rain to rainDrop at position i
     }
 
 
-   
+    
 
-    // Vertex data for cubemap
+    
+
+
+    // vertex data for cubemap
     float cubeVertices[] = {
         // positions          // texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -335,6 +336,8 @@ int main()
     //Keep displaying the window until we have shut it down
     while (!glfwWindowShouldClose(window))
     {
+        inputCallback(window);
+
         // per-frame time logic
         // --------------------
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -388,7 +391,8 @@ int main()
         Model = glm::scale(Model, glm::vec3(scale_size));
         // translate gun further away from camera
         Model = glm::translate(Model, glm::vec3(gunPositionX, 0.0f, gunPositionZ));
-        gunAngle += 0.0002;
+        gunAngle += 0.005;
+        if (gunAngle > 360) gunAngle = 0.001;
         Model = glm::rotate(Model, gunAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
         // =======================================================================
@@ -446,7 +450,7 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
             if (rainPositions[i][1] < RAIN_SURFACE)
                 rainPositions[i][1] = RAIN_HEIGHT;
 
-            model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], rainPositions[i][2]));
+            model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], gunPositionZ));
             model = glm::scale(model, glm::vec3(100.f, 10.f, 100.f));
             // add list of matrices
             rainModelMatrices[i] = model;
@@ -526,33 +530,52 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
 }
 
 
-void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes)
+
+
+void inputCallback(GLFWwindow* window)
 {
     // If ESC is pressed, close the window
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
+        cout << "ESC Key Pressed\n";
         glfwSetWindowShouldClose(window, GL_TRUE);
         return;
     }
 
-    if ((key == GLFW_KEY_HOME || key == GLFW_KEY_H) && action == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+    {
+        cout << "HOME/H Key Pressed\n";
         camera = glm::vec3(0.0f, 0.0f, 1500.0f);
+    }
     
     // move camera
-    if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        cout << "UP Arrow Key Pressed\n";
         camera.ProcessKeyboard(FORWARD, deltaTime);
     }
-    if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        cout << "DOWN Arrow Key Pressed\n";
         camera.ProcessKeyboard(BACKWARD, deltaTime);
     }
-    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        cout << "LEFT Arrow Key Pressed\n";
         camera.ProcessKeyboard(LEFT, deltaTime);
     }
-    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        cout << "RIGHT Arrow Key Pressed\n";
         camera.ProcessKeyboard(RIGHT, deltaTime);
     }
 
+    // Rotate Object
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        cout << "A Key Pressed\n";
+        skullAngle -= 0.2f;
+    }
 
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        cout << "D Key Pressed\n";
+        skullAngle += 0.15f;
+    }
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
@@ -569,8 +592,14 @@ void clickDragCallback(GLFWwindow* window, int button, int  action, int mode)
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
+        cout << "Left Button Clicked\n";
         // Make sure that the button is held down
         glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GL_TRUE);
+
+        // Gets starting X & Y positions of mouse pointer 
+        glfwGetCursorPos(window, &startX, &startY);
+
+        cout << "\nBegin Dragging Mouse... ";
 
     }
 
@@ -578,9 +607,21 @@ void clickDragCallback(GLFWwindow* window, int button, int  action, int mode)
     {
         cout << "\nEnd Draging Mouse...\n";
 
+        // Gets ending X & Y positions of mouse pointer 
+        glfwGetCursorPos(window, &endX, &endY);
+
         cout << "\nMouse has moved from X : " << startX << " to " << endX;
-        cout << "\nMouse has moved from Y : " << startY << " to " << endY;
+        cout << "\nMouse has moved from Y : " << startY << " to " << endY << "\n";
     }
+
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT &&
+        action == GLFW_PRESS)
+        cout << "\nRight Button Clicked\n";
+
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE &&
+        action == GLFW_PRESS)
+        cout << "\nMiddle Button Clicked\n";
 }
 
 void moveMouseCallback(GLFWwindow* window, double xpos, double ypos)
@@ -604,6 +645,11 @@ void moveMouseCallback(GLFWwindow* window, double xpos, double ypos)
         camera.ProcessMouseMovement(xoffset, yoffset);
     //}
     
+}
+
+void windowSize_callback(GLFWwindow* window, int width,int height)
+{
+    glViewport(0, 0, width, height);
 }
 
 // misc
