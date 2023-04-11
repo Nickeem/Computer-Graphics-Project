@@ -24,6 +24,15 @@ Instructions:
 Move camera with arrow keys
 Mouse can be used to change what you are looking at
 Pressing H returns the camera to the initial position
+
+To move gun:
+    Press I - to move up
+    Press K - to move down
+    Press J - to move left
+    Press L - to move right
+To rotate gun
+    Press 1 - to rotate left
+    Press 2 - to rotate right
 Press ESC to close program
 
 */
@@ -51,7 +60,7 @@ GLFWwindow* window;
 
 // properties
 GLuint screenWidth = 1500, screenHeight = 900;
-GLfloat scale_size = 60.0f;
+
 
 //Initial location of camera
 glm::vec3 camLocation(0.0f, 0.0f, 1500.0f);
@@ -65,9 +74,21 @@ bool mouseMoved = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+
+// gun size 
+GLfloat gunSize = 60.0f;
+const GLfloat GUN_SIZE_CHANGE_FACTOR = 0.05f;
 //  gun position
 GLfloat gunPositionZ = 0.1f;
 GLfloat gunPositionX = 0.0f;
+GLfloat gunPositionY = 0.0f;
+// gun angle
+GLfloat gunAngle = -0.9f;
+const GLfloat GUN_ANGLE_CHANGE_FACTOR = 0.008;
+// gun movement
+const GLfloat GUN_MOVEMENT_CHANGE = 0.05f; // change how much the gun moves (X,Y) when keys are pressed
+
+
 
 // properties of rain
 const GLfloat RAIN_HEIGHT = 1000.0f;
@@ -160,7 +181,7 @@ int main()
     srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
     init_Resources();
 
-    GLfloat gunAngle = -0.9f;
+    
 
     glm::mat4 View;
 
@@ -388,10 +409,10 @@ int main()
         glm::mat4 Model = glm::mat4(1);
 
         //Modify the model matrix with scaling, translation, rotation, etc
-        Model = glm::scale(Model, glm::vec3(scale_size));
+        Model = glm::scale(Model, glm::vec3(gunSize));
         // translate gun further away from camera
-        Model = glm::translate(Model, glm::vec3(gunPositionX, 0.0f, gunPositionZ));
-        gunAngle += 0.005;
+        Model = glm::translate(Model, glm::vec3(gunPositionX, gunPositionY, gunPositionZ));
+        gunAngle += 0.0001;
         if (gunAngle > 360) gunAngle = 0.001;
         Model = glm::rotate(Model, gunAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -569,13 +590,28 @@ void inputCallback(GLFWwindow* window)
     // Rotate Object
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         cout << "A Key Pressed\n";
-        skullAngle -= 0.2f;
+        gunAngle -= GUN_ANGLE_CHANGE_FACTOR;
     }
-
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         cout << "D Key Pressed\n";
-        skullAngle += 0.15f;
+        gunAngle += GUN_ANGLE_CHANGE_FACTOR;
     }
+    // move Object
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+        gunPositionX -= GUN_MOVEMENT_CHANGE;
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+        gunPositionX += GUN_MOVEMENT_CHANGE;
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+        gunPositionY += GUN_MOVEMENT_CHANGE;
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+        gunPositionY -= GUN_MOVEMENT_CHANGE;
+
+    // change size of object
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        gunSize -= GUN_SIZE_CHANGE_FACTOR;
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        gunSize += GUN_SIZE_CHANGE_FACTOR;
+    
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
