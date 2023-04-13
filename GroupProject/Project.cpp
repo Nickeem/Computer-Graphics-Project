@@ -31,8 +31,13 @@ To move gun:
     Press J - to move left
     Press L - to move right
 To rotate gun
-    Press 1 - to rotate left
-    Press 2 - to rotate right
+    Press A - to rotate left
+    Press D - to rotate right
+To change size of gun
+    Press 1 - to make gun smaller
+    Press 2 - to make gun bigger
+To stop Rain
+    Press SPACE
 Press ESC to close program
 
 */
@@ -97,9 +102,12 @@ const int MAX_RAIN_WIDTH = 4000;
 const int MAX_RAIN_Z = 4000;
 const int MAX_RAIN_SPEED = 10000;
 const unsigned int RAIN_DROPS = 1000;
+GLboolean stopRain = false;
 
 GLfloat skullAngle = -0.9f;
 
+
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes);
 void inputCallback(GLFWwindow* window);
 // void mouseClickedCallback(GLFWwindow* window, int button, int  action, int mode);
 void moveMouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -159,6 +167,7 @@ void init_Resources()
         // Registering the call-back functions for the mouse
         //----------------------------------------------------
     // glfwSetMouseButtonCallback(window, mouseClickedCallback);
+    glfwSetKeyCallback(window, keyboardCallback);
     glfwSetMouseButtonCallback(window, clickDragCallback);
     glfwSetCursorPosCallback(window, moveMouseCallback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -467,14 +476,17 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
         // =======================================================================
         // Create the model matrix  for rain including physics
         // =======================================================================
-
+        int changeY;
         rainShader.Use();
         for (unsigned int i = 0; i < RAIN_DROPS; i++) {
             glm::mat4 model = glm::mat4(1.0f);
 
-            rainPositions[i][1] -= rainSpeeds[i]; // make rain fall to surface
-            if (rainPositions[i][1] < RAIN_SURFACE)
-                rainPositions[i][1] = RAIN_HEIGHT;
+            
+            if (!stopRain) {
+                rainPositions[i][1] -= rainSpeeds[i]; // make rain fall to surface
+                if (rainPositions[i][1] < RAIN_SURFACE)
+                    rainPositions[i][1] = RAIN_HEIGHT;
+            }
 
             model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], rainPositions[i][2]));
             model = glm::scale(model, glm::vec3(100.f, 10.f, 100.f));
@@ -615,8 +627,16 @@ void inputCallback(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
         gunSize -= GUN_SIZE_CHANGE_FACTOR;
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-        gunSize += GUN_SIZE_CHANGE_FACTOR;
-    
+        gunSize += GUN_SIZE_CHANGE_FACTOR;  
+}
+
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int modes)
+{
+    // stop or start rain
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        stopRain = !stopRain;
+    }
+
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
