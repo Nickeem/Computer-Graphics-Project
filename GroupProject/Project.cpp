@@ -484,8 +484,8 @@ for (unsigned int i=0; i <RAIN_DROPS;i++)
             
             if (!stopRain) {
                 rainPositions[i][1] -= rainSpeeds[i]; // make rain fall to surface
-                if (rainPositions[i][1] < RAIN_SURFACE)
-                    rainPositions[i][1] = RAIN_HEIGHT;
+                if (rainPositions[i][1] < RAIN_SURFACE || rainPositions[i][1] > RAIN_HEIGHT)
+                    rainSpeeds[i] *= -1;
             }
 
             model = glm::translate(model, glm::vec3(rainPositions[i][0], rainPositions[i][1], rainPositions[i][2]));
